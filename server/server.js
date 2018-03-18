@@ -1,66 +1,26 @@
-const mongoose = require("mongoose");
+let express = require("express");
+let bodyParser = require("body-parser");
 
-mongoose.Promise = global.Promise;
-mongoose.connect("mongodb://localhost:27017/TodoApp");
+let {mongoose} = require("./db/mongoose");
+let {Todo} = require("./models/todo");
+let {User} = require("./models/user");
 
-let Todo = mongoose.model("Todo", {
-    text: {
-        type: String,
-        required: true,
-        minlength: 1,
-        trim:true //remove leading or trailing spaces.
-    },
-    completed: {
-        type: Boolean,
-        default: false
-    },
-    completedAt: {
-        type:  Number,
-        default: null
-    }
+let app = express();
+
+app.use(bodyParser.json());
+
+app.post("/todos", (req, res)=>{
+    let todo = new Todo({
+        text: req.body.text
+    });
+
+    todo.save().then((doc)=>{
+       res.send(doc);
+    }, (e)=>{
+        res.status(400).send(e);
+    });
 });
 
-//User model
-//email - require, trim, string, min 1
-let User = mongoose.model("User", {
-   email: {
-       type: String,
-       required: true,
-       minlength: 1,
-       trim: true
-   }
+app.listen(3000, ()=>{
+   console.log("Started on port 3000");
 });
-
-let newUser = new User({
-   email:" test@test.com   "
-});
-
-newUser.save().then((doc)=>{
-    console.log("Saved User ", doc)
-}, (e)=>{
-    console.log("Error saving user, ",e);
-});
-
-/*
-let newTodo = new Todo({
-    text: "Cook dinner"
-});
-
-newTodo.save().then((doc)=>{
-    console.log("Saved todo", doc)
-}, (e)=>{
-    console.log("Unable to save todo", e)
-});
-let dateTime = new Date().getTime();
-let timestamp = Math.floor(dateTime / 1000);
-let todo2 = new Todo({
-    text: "Second Todo",
-    completed: true,
-    completedAt: timestamp
-});
-
-todo2.save().then((doc)=>{
-    console.log("Saved todo", doc);
-}, (e)=>{
-    console.log("Unable to solve second todo",e);
-});*/
